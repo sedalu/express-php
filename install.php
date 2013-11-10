@@ -127,7 +127,7 @@ if($DB[DATABASE] && $_POST['user'] && $_POST['pass']) {
     header('Location: admin.php');
 } else {
     $content = '<div id="content"><h1>Express: Install</h1>' . "\n"
-    . '<form action="install" method="post">' . "\n"
+    . '<form action="install.php" method="post">' . "\n"
     . '<h2>Instructions</h2>' . "\n"
     . '<p>Before installation can start, you must change \'/librarian/config.php\' to reflect your situation.</p>' . "\n"
     . '<p>Next fill in the values below.</p>' . "\n"
