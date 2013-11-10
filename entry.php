@@ -27,7 +27,7 @@ if($entry =  db_fetch($TABLE[ENTRIES], '', $_GET['id'])) {
         }
     }
 
-    if($comments = db_fetch($FETCH[ENTRY_COMMENTS], '', $entry['id'])) {
+    if($comments = db_fetch($FETCH[ENTRY_COMMENTS], 'date DESC', $entry['id'])) {
        $comment_templet = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[COMMENT], $entry['section'], $entry['category']);
 
         for($i = 1; $i <= mysql_num_rows($comments); $i++) {

@@ -18,7 +18,7 @@ $EXPRESS[SETTINGS][SINGLE] = 'setting';
 $EXPRESS[TEMPLETS][TABLE] = 'templets';
 $EXPRESS[TEMPLETS][SINGLE] = 'templet';
 
-$EXPRESS[VERSION] = '1.0.4';
+$EXPRESS[VERSION] = '1.1.0';
 
 require_once('config.php');
 require_once('database.php');

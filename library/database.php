@@ -39,6 +39,7 @@ $TABLE[SETTINGS] = 'settings';
 $TABLE[TEMPLETS] = 'templets';
 
 $TEMPLET_CLASS[HTML] = 'HTML';
+$TEMPLET_CLASS[RSS_XML] = 'RSS/XML';
 
 $TEMPLET_TYPE[COMMENT] = 'Comment';
 $TEMPLET_TYPE[COMMENT_ENTRY] = 'Comment Entry';
@@ -143,7 +144,7 @@ function db_create_table($table, $drop = false) {
                 . '`type` enum(\'' . $TEMPLET_TYPE[COMMENT] . '\',\'' . $TEMPLET_TYPE[COMMENT_ENTRY] . '\',\'' . $TEMPLET_TYPE[ENTRY] . '\',\'' . $TEMPLET_TYPE[INDEX_ENTRY] . '\',\'' . $TEMPLET_TYPE[PAGE] . '\',\'' . $TEMPLET_TYPE[SECTION] . '\',\'' . $TEMPLET_TYPE[SECTION_ENTRY] . '\',\'' . $TEMPLET_TYPE[SECTION_LINK] . '\',\'' . $TEMPLET_TYPE[SEGMENT] . '\') NOT NULL default \'' . $TEMPLET_TYPE[COMMENT] . '\','
                 . '`section` tinyint(3) unsigned NOT NULL default \'0\','
                 . '`category` int(10) unsigned NOT NULL default \'0\','
-                . '`class` enum(\'' . $TEMPLET_CLASS[HTML] . '\') NOT NULL default \'' . $TEMPLET_CLASS[HTML] . '\','
+                . '`class` enum(\'' . $TEMPLET_CLASS[HTML] . '\', \'' . $TEMPLET_CLASS[RSS_XML] . '\') NOT NULL default \'' . $TEMPLET_CLASS[HTML] . '\','
                 . '`text` text NOT NULL,'
                 . 'PRIMARY KEY (`id`),'
                 . 'UNIQUE KEY `UNIQUE` (`type`,`section`,`category`,`class`)';

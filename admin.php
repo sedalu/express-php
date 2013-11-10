@@ -57,6 +57,7 @@ if(!librarian_express_installed()) {
         db_create($TABLE[SETTINGS], array('id' => $SETTING[ADMIN_PASS], 'value' => $_POST['install']['express']['pass']));
         db_create($TABLE[SETTINGS], array('id' => $SETTING[ADMIN_USER], 'value' => $_POST['install']['express']['user']));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[PAGE], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<?xml version="1.0" encoding="utf-8"?>\r\n<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3c.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">\r\n<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">\r\n<head>\r\n<title><!-- site title -->: <!-- title --></title>\r\n<link rel="stylesheet" type="text/css" href="css/style_sample.css" />\r\n</head>\r\n<body>\r\n<div id="header"><!-- site title --></div>\r\n<div id="navigation"><a href="index.php" title="Home">Home</a> |<!-- section links -->| <a href="mailto:user@doman.tld" title="Email">Email</a></div>\r\n<div id="content"><h1><!-- title --></h1>\r\n<!-- content --></div>\r\n<div id="footer"><p><a href="http://express.sedalu.com/" title="Express">Powered by Express</a></p></div>\r\n</body>\r\n</html>'));
+//        db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[PAGE], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[RSS_XML], 'text' => 'RSS/XML Feed'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[COMMENT], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<h3><!-- name --></h3>\n<div><!-- date --> | <!-- time --></div>\n<p><!-- comment --></p>'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[SECTION], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<h2><a name="<!-- category anchor -->"></a><!-- title --></h2>\n<!-- content -->'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[COMMENT_ENTRY], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<h2><!-- title --></h2>\n<p><!-- text --></p>\n<h2>Leave Comment</h2>\n<!-- comment form -->'));
@@ -87,6 +88,16 @@ if(!librarian_express_installed()) {
 
     html_display_page('Express: Install', $content . '</div>' . "\n" . admin__html_footer());
 } elseif(session_validate()) {
+    $version = db_fetch($TABLE[SETTINGS], '', 'express version');
+    if($version == '') {
+        $query = 'ALTER TABLE `express_templets` CHANGE `class` `class` ENUM( \'HTML\', \'RSS/XML\' ) DEFAULT \'HTML\' NOT NULL';
+        if(mysql_query($query, $DB[LINK])) {
+            $setting['id'] = 'express version';
+            $setting['value'] = '1.1.0';
+            db_create($TABLE[SETTINGS], $setting);
+        }
+    }
+
     $content = '<div id="content"><h1>';
 
     if(isset($_GET['create'])) {

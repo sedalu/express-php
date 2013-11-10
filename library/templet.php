@@ -179,10 +179,10 @@ function templet_replace_token__section_links($templet, $values) {
     global $FETCH, $TABLE, $TEMPLET_TYPE;
 
     if($sections = db_fetch($TABLE[SECTIONS], 'priority DESC, title ASC')) {
-        $section_link = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[SECTION_LINK]);
-    
         for($i = 1; $i <= mysql_num_rows($sections); $i++) {
-            $section_links .= templet_replace_tokens($section_link, mysql_fetch_array($sections));
+            $section = mysql_fetch_array($sections);
+            $section_link = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[SECTION_LINK], $section['id']);
+            $section_links .= templet_replace_tokens($section_link, $section);
         }
     }
 
