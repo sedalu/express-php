@@ -6,7 +6,7 @@
 $COLUMN[CLASSES] = 'class';
 $COLUMN[TYPES] = 'type';
 
-$DB[LINK] = mysql_connect($DB[HOST], $DB[USER], $DB[PASS]);
+@$DB[LINK] = mysql_connect($DB[HOST], $DB[USER], $DB[PASS]);
 
 $FETCH[ENTRY] = 'entry';
 $FETCH[ENTRY_COMMENTS] = 'entry:comment';
@@ -15,11 +15,11 @@ $FETCH[INDEX_ENTRIES] = 'index:entries';
 $FETCH[INDEX_SECTIONS] = 'index:sections';
 $FETCH[TEMPLET] = 'templet';
 
-$ORDER[CATEGORY] = 'id ASC';
-$ORDER[COMMENTS] = 'date DESC';
-$ORDER[ENTRIES] = 'date DESC';
-$ORDER[SECTIONS] = 'id ASC';
-$ORDER[SEGMENTS] = 'id ASC';
+$ORDER[CATEGORIES] = 'priority DESC, title ASC';
+$ORDER[COMMENTS] = 'entry ASC, date DESC';
+$ORDER[ENTRIES] = 'section ASC, category ASC, date DESC';
+$ORDER[SECTIONS] = 'priority DESC, title ASC';
+$ORDER[SEGMENTS] = 'entry DESC, title ASC';
 $ORDER[TEMPLETS] = 'class ASC, section ASC, category ASC, type ASC';
 
 $SETTING[ADMIN_PASS] = 'admin pass';
@@ -50,7 +50,7 @@ $TEMPLET_TYPE[SECTION_ENTRY] = 'Section Entry';
 $TEMPLET_TYPE[SECTION_LINK] = 'Section Link';
 $TEMPLET_TYPE[SEGMENT] = 'Segment';
 
-mysql_select_db($DB[DATABASE], $DB[LINK]);
+@mysql_select_db($DB[DATABASE], $DB[LINK]);
 
 # DB_CREATE ####################################################################
 # bool db_create(string $table, array $item)

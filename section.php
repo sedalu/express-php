@@ -4,6 +4,10 @@
 ################################################################################
 require_once('library/librarian.php');
 
+if(!librarian_express_installed()) {
+    header('Location: admin.php');
+}
+
 if(($section = db_fetch($TABLE[SECTIONS], '', $_GET['id'])) && ($categories = db_fetch($TABLE[CATEGORIES], 'priority DESC, title ASC'))) {
     $page = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[PAGE], $section['id']);
     $section_templet = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[SECTION], $section['id']);
@@ -14,13 +18,13 @@ if(($section = db_fetch($TABLE[SECTIONS], '', $_GET['id'])) && ($categories = db
             $entry = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[SECTION_ENTRY], $section['id'], $category['id']);
 
             for($j = 1; $j <= mysql_num_rows($entries); $j++) {
-                $category['content'] .= templet_complete($entry, mysql_fetch_array($entries));
+                $category['content'] .= templet_replace_tokens($entry, mysql_fetch_array($entries));
             }
 
-        $section['content'] .= templet_complete($section_templet, $category);
+        $section['content'] .= templet_replace_tokens($section_templet, $category);
         }
     }
 
-    echo templet_complete($page, $section);
+    echo templet_replace_tokens($page, $section);
 }
 ?>

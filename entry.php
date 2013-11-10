@@ -4,7 +4,18 @@
 ################################################################################
 require_once('library/librarian.php');
 
-if($entry =  db_fetch($TABLE[ENTRIES], 'date DESC, title ASC', $_GET['id'])) {
+if(!librarian_express_installed()) {
+    header('Location: admin.php');
+}
+
+if($entry =  db_fetch($TABLE[ENTRIES], '', $_GET['id'])) {
+    $_POST['comment']['entry'] = $entry['id'];
+
+    if($_POST['comment']['name'] && $_POST['comment']['comment']) {
+        db_create($TABLE[COMMENTS], $_POST['comment']);
+        unset($_POST['comment']);
+    }
+
     $page = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[PAGE], $entry['section'], $entry['category']);
     $entry_templet = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[ENTRY], $entry['section'], $entry['category']);
 
@@ -12,7 +23,7 @@ if($entry =  db_fetch($TABLE[ENTRIES], 'date DESC, title ASC', $_GET['id'])) {
         $segment_templet = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[SEGMENT], $entry['section'], $entry['category']);
 
         for($i = 1; $i <= mysql_num_rows($segments); $i++) {
-            $entry['segments'] .= templet_complete($segment_templet, mysql_fetch_array($segments));
+            $entry['segments'] .= templet_replace_tokens($segment_templet, mysql_fetch_array($segments));
         }
     }
 
@@ -20,11 +31,11 @@ if($entry =  db_fetch($TABLE[ENTRIES], 'date DESC, title ASC', $_GET['id'])) {
        $comment_templet = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[COMMENT], $entry['section'], $entry['category']);
 
         for($i = 1; $i <= mysql_num_rows($comments); $i++) {
-            $entry['comments'] .= templet_complete($comment_templet, mysql_fetch_array($comments));
+            $entry['comments'] .= templet_replace_tokens($comment_templet, mysql_fetch_array($comments));
         }
     }
 
-    $entry['content'] .= templet_complete($entry_templet, $entry);
-    echo templet_complete($page, $entry);
+    $entry['content'] .= templet_replace_tokens($entry_templet, $entry);
+    echo templet_replace_tokens($page, $entry);
 }
 ?>
