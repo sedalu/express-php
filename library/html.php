@@ -3,7 +3,7 @@
 # LIBRARY/HTML.PHP                                                             #
 ################################################################################
 
-$EXPRESS['version'] = '1.0.2';
+$EXPRESS['version'] = '1.0.3' . ($DEMO ? ' Demo' : '');
 
 # HTML_ADMIN_FRAME #############################################################
 # string html_admin_frame()
@@ -74,14 +74,13 @@ function html_admin_panel() {
 # HTML_ADMIN_SETTINGS ##########################################################
 # string html_admin_settings()
 function html_admin_settings() {
-    global $SETTING, $TABLE;
+    global $DEMO, $SETTING, $TABLE;
 
     $html = '<form action="admin.php?mode=preview" method="post">' . "\n"
         . '<input type="hidden" name="modify" value="settings" />' . "\n"
         . '<h3>Login</h3>' . "\n"
-        . html_textbox('setting[' . $SETTING[ADMIN_USER] . ']', 'Username', db_fetch($TABLE[SETTINGS], '', $SETTING[ADMIN_USER]))
-        . html_textbox('setting[' . $SETTING[ADMIN_PASS] . ']', 'Password', db_fetch($TABLE[SETTINGS], '', $SETTING[ADMIN_PASS]), true)
-
+        . html_textbox('setting[' . $SETTING[ADMIN_USER] . ']', 'Username', (!$DEMO ? db_fetch($TABLE[SETTINGS], '', $SETTING[ADMIN_USER]) : ''))
+        . html_textbox('setting[' . $SETTING[ADMIN_PASS] . ']', 'Password', (!$DEMO ? db_fetch($TABLE[SETTINGS], '', $SETTING[ADMIN_PASS]) : ''), true)
         . '<h3>Format</h3>' . "\n"
         . html_textbox('setting[' . $SETTING[FORMAT_DATE] . ']', 'Date', db_fetch($TABLE[SETTINGS], '', $SETTING[FORMAT_DATE]))
         . html_textbox('setting[' . $SETTING[FORMAT_TIME] . ']', 'Time', db_fetch($TABLE[SETTINGS], '', $SETTING[FORMAT_TIME]))
@@ -89,7 +88,7 @@ function html_admin_settings() {
         . html_textbox('setting[' . $SETTING[SITE_TITLE] . ']', 'Title', db_fetch($TABLE[SETTINGS], '', $SETTING[SITE_TITLE]))
         . html_textbox('setting[' . $SETTING[INDEX_TITLE] . ']', 'Index Title', db_fetch($TABLE[SETTINGS], '', $SETTING[INDEX_TITLE]))
         . html_textbox('setting[' . $SETTING[INDEX_LIMIT] . ']', 'Index Limit', db_fetch($TABLE[SETTINGS], '', $SETTING[INDEX_LIMIT]))
-        . '<p class="form"><input type="reset" value="Reset" /> <input type="submit" value="Save" /></p>' . "\n"
+        . '<p class="form"><input type="reset" value="Reset" /><input type="submit" value="Save" /></p>' . "\n"
         . '</form>' . "\n";
 
     return $html;
@@ -119,40 +118,8 @@ function html_footer() {
 
     return '</div>' . "\n"
         . '<div id="footer"><p><a href="http://express.sedalu.com/" title="Express">Express</a> (version ' . $EXPRESS['version'] . ')</p>' . "\n"
-        . '<p>Copyright &copy; 2003 Seth D Lumnah. All rights reserved.</p>' . "\n";
-}
-
-# HTML_GET_SELECTION_LIST ######################################################
-# string html_get_selection_list(string $table, string $variable, string $label,
-#                                int $value)
-function html_get_selection_list($table, $variable, $label, $value) {
-    global $DB, $TABLE;
-    $html = '<h3><lable for="' . $variable . '">' . $label . '</lable></h3>' . "\n";
-
-    if($items = db_fetch($table, 'id')) {
-        $html .= '<select name="' . $variable . '">' . "\n";
-
-        for($i = 1; $i <= mysql_num_rows($items); $i++) {
-            $item = mysql_fetch_array($items);
-            $html .= '<option value="' . $item['id'] . '"' . (($value == $item['id']) ? ' selected' : '') . '>';
-
-            if($table == $TABLE[TEMPLETS]) {
-                $section = db_fetch($TABLE[SECTIONS], 'priority DESC, title ASC', $item['section']);
-                $category = db_fetch($TABLE[CATEGORIES], 'priority DESC, title ASC', $item['category']);
-                $html .= strtoupper($item['class']) . ': ' . ($item['section'] ? $section['title'] . ': ' : '') . ($item['category'] ? $category['title'] . ': ' : '') . ucwords($item['type']);
-            } elseif($table == $TABLE[SETTINGS]) {
-                $html .= ucwords($item['id']) . '</option>' . "\n";
-            } else {
-                $html .= $item['title'] . '</option>' . "\n";
-            }
-        }
-
-        $html .= '</select>' . "\n";
-    } else {
-        $html .= '<p>None available</p>' . "\n";
-    }
-
-    return $html;
+        . '<p>Copyright &copy; 2003 Seth D Lumnah.</p>' . "\n"
+        . '<p>All rights reserved.</p>' . "\n";
 }
 
 # HTML_FORM ####################################################################
@@ -195,77 +162,39 @@ $item = db_fetch($table, '', $id);
             . html_textarea('item[comment]', 'Comment', $item['comment']);
     } elseif($table == $TABLE[ENTRIES]) {
         $html .= html_textbox('item[title]', 'Title', $item['title'])
-            . html_get_selection_list($TABLE[SECTIONS], 'item[section]', 'Section', $item['section'])
-            . html_get_selection_list($TABLE[CATEGORIES], 'item[category]', 'Category', $item['category'])
+            . html_selection_list('item[section]', 'Section', '', $item['section'], $TABLE[SECTIONS])
+            . html_selection_list('item[category]', 'Category', '', $item['category'], $TABLE[CATEGORIES])
             . html_textbox('item[date]', 'Date', ($item ? $item['date'] : date('Y-m-d H-i-s', time())))
             . html_textarea('item[text]', 'Text', $item['text']);
     } elseif($table == $TABLE[SECTIONS]) {
+        $radio_list['yes']['id'] = '1';
+        $radio_list['yes']['title'] = 'Yes';
+        $radio_list['no']['id'] = '0';
+        $radio_list['no']['title'] = 'No';
         $html .= html_textbox('item[title]', 'Title', $item['title'])
             . html_textbox('item[priority]', 'Priority', ($item ? $item['priority'] : '1'))
-            . '<h3><lable for"item[index_display]">Index Display:</lable></h3>' . "\n"
-            . '<input type="radio" name="item[index_display]" value="1"' . ($item['index_display'] ? ' checked' : '') . ' />Yes' . "\n"
-            . '<input type="radio" name="item[index_display]" value="0"' . (!$item['index_display'] ? ' checked' : '') . ' />No' . "\n";
+            . html_radio_list('item[index_display]', 'Index Display', $radio_list, ($item['index_display'] ? $item['index_display'] : 0));
     } elseif($table == $TABLE[SEGMENTS]) {
         $html .= html_textbox('item[title]', 'Title', $item['title'])
-            . html_get_selection_list($TABLE[ENTRIES], 'item[entry]', 'Entry', $item['entry'])
+            . html_selection_list('item[entry]', 'Entry', '', $item['entry'], $TABLE[ENTRIES])
             . html_textarea('item[text]', 'Text', $item['text']);
     } elseif($table == $TABLE[SETTINGS]) {
         $html .= html_textbox('item[value]', ucwords($id), $item);
     } elseif($table == $TABLE[TEMPLETS]) {
+        $default['title'] = 'DEFAULT';
+        $default['id'] = '0';
         $html .= html_selection_list('item[class]', 'Class', $TEMPLET_CLASS, $item['class'])
-            . '<label for="item[section]">Section:</label>' . "\n"
-            . '<select name="item[section]">' . "\n"
-            . '<option value="0"' . (($item['section'] == 0) ? ' selected' : '') . '>DEFAULT</option>' . "\n";
-
-        if($sections = db_fetch($TABLE[SECTIONS], 'priority DESC, title ASC')) {
-            for($i = 1; $i <= mysql_num_rows($sections); $i++) {
-                $section = mysql_fetch_array($sections);
-                $html .= '<option value="' . $section['id'] . '"' . (($item['section'] == $section['id']) ? ' selected' : '') . '>' . $section['title'] . '</option>' . "\n";
-            }
-        }
-
-        $html .= '</select>' . "\n"
-            . '<label for="item[category]">Category:</label>' . "\n"
-            . '<select name="item[category]">' . "\n"
-            . '<option value="0"' . (($item['category'] == 0) ? ' selected' : '') . '>DEFAULT</option>' . "\n";
-
-        if($categories = db_fetch($TABLE[CATEGORIES], 'priority DESC, title ASC')) {
-            for($i = 1; $i <= mysql_num_rows($categories); $i++) {
-                $category = mysql_fetch_array($categories);
-                $html .= '<option value="' . $category['id'] . '"' . (($item['category'] == $category['id']) ? ' selected' : '') . '>' . $category['title'] . '</option>' . "\n";
-            }
-        }
-
-        $html .= '</select>' . "\n"
+            . html_selection_list('item[section]', 'Section', array($default), $item['section'], $TABLE[SECTIONS])
+            . html_selection_list('item[category]', 'Category', array($default), $item['category'], $TABLE[CATEGORIES])
             . html_selection_list('item[type]', 'Type', $TEMPLET_TYPE, $item['type'])
             . html_textarea('item[text]', 'Text', $item['text']);
     }
 
-    $html .= '<p class="form"><input type="reset" value="Reset" /> <input type="submit" value="Save" /></p>' . "\n"
+    $html .= '<p class="form"><input type="reset" value="Reset" /><input type="submit" value="Save" /></p>' . "\n"
         . '</form>' . "\n";
 
     return $html;
 }
-
-# HTML_MAKE_LIST ###############################################################
-# string html_make_list(string $text)
-function html_make_list($text) {
-    return '<ul>' . "\n"
-        . '<li>' . str_replace("\r\n", '</li>' . "\r\n" . '<li>', trim($text)) . '</li>' . "\n"
-        . '</ul>' . "\n";
-}
-
-# HTML_MAKE_PARAGRAPHS #########################################################
-# string html_make_paragraphs(string $text)
-function html_make_paragraphs($text) {
-    return '<p>' . str_replace("\r\n", '</p>' . "\r\n" . '<p>', trim($text)) . '</p>' . "\n";
-}
-
-
-
-
-# HTML_CHECKBOX ################################################################
-# string html_checkbox()
 
 # HTML_LABEL ###################################################################
 # string html_label(string $var, string $label)
@@ -273,25 +202,89 @@ function html_label($var, $label) {
     return '<label for="' . $var . '">' . $label . '</label>' . "\n";
 }
 
-# HTML_SELECTION_LIST ##########################################################
-# string html_selection_list(string $var, string $label, array $items[, string
+# HTML_RADIO_LIST ##############################################################
+# string html_radio_list(string $var, string $label, array $items[, string
 #                            $value])
-function html_selection_list($var, $label, $items, $value = '') {
-    $html = html_label($var, $label)
-        . '<select name="' . $var . '">' . "\n";
+function html_radio_list($var, $label, $items, $value = '') {
+    $html = html_label($var, $label);
 
-    foreach($items as $item) {
-        $html .= '<option value="' . (is_array($item['id']) ? $item['id'] : $item) . '"' . (($value == (is_array($item['id']) ? $item['id'] : $item)) ? ' selected' : '') . '>' . (is_array($item['title']) ? $item['title'] : $item) . '</option>' . "\n";
+    if(is_array($items)) {
+        $i = 1;
+
+        foreach($items as $item) {
+            $html .= '<input type="radio" name="' . $var . '" value="' . (is_array($item) ? $item['id'] : $item) . '"' . (($value == (is_array($item) ? $item['id'] : $item)) ? ' checked' : '') . ' />' . (is_array($item) ? $item['title'] : $item);
+            $i++;
+
+            if($i <= count($items)) {
+                $html .= '<br />' . "\n";
+            }
+        }
     }
 
-    return $html . '</select>' . "\n";
+    return $html . "\n";
+}
+
+# HTML_SELECTION_LIST ##########################################################
+# string html_selection_list(string $var, string $label, array $items[, string
+#                            $value[, string $table]])
+function html_selection_list($var, $label, $items, $value = '', $table = '') {
+    global $ORDER, $TABLE;
+
+    $html = html_label($var, $label);
+
+    if(is_array($items) || db_fetch($table)) {
+        $html .= '<select name="' . $var . '">' . "\n";
+    
+        if(is_array($items)) {
+            foreach($items as $item) {
+                $html .= '<option value="' . (is_array($item) ? $item['id'] : $item) . '"' . (($value == (is_array($item) ? $item['id'] : $item)) ? ' selected' : '') . '>' . (is_array($item) ? $item['title'] : $item) . '</option>' . "\n";
+            }
+        }
+    
+        if($items = db_fetch($table, $ORDER[strtoupper($table)])) {
+            for($i = 1; $i <= mysql_num_rows($items); $i++) {
+                $item = mysql_fetch_array($items);
+                $html .= '<option value="' . $item['id'] . '"' . (($value == $item['id']) ? ' selected' : '') . '>';
+
+                if($table == $TABLE[COMMENTS]) {
+                    $entry = db_fetch($TABLE[ENTRIES], '', $item['entry']);
+                    $section = db_fetch($TABLE[SECTIONS], '', $entry['section']);
+                    $category = db_fetch($TABLE[CATEGORIES], '', $entry['category']);
+                    $html .= ($section['title'] ? $section['title'] : '') . ': ' . ($category['title'] ? $category['title'] : '') . ': ' . ($entry['title'] ? $entry['title'] : '') . ': ' . $item['name'] . ' (' . $item['date'] . ')';
+                } elseif($table == $TABLE[ENTRIES]) {
+                    $section = db_fetch($TABLE[SECTIONS], '', $item['section']);
+                    $category = db_fetch($TABLE[CATEGORIES], '', $item['category']);
+                    $html .= ($section['title'] ? $section['title'] : '') . ': ' . ($category['title'] ? $category['title'] : '') . ': ' . $item['title'];
+                } elseif($table == $TABLE[SEGMENTS]) {
+                    $entry = db_fetch($TABLE[ENTRIES], '', $item['entry']);
+                    $section = db_fetch($TABLE[SECTIONS], '', $entry['section']);
+                    $category = db_fetch($TABLE[CATEGORIES], '', $entry['category']);
+                    $html .= ($section['title'] ? $section['title'] : '') . ': ' . ($category['title'] ? $category['title'] : '') . ': ' . ($entry['title'] ? $entry['title'] : '') . ': ' . $item['title'];
+                } elseif($table == $TABLE[TEMPLETS]) {
+                    $section = db_fetch($TABLE[SECTIONS], '', $item['section']);
+                    $category = db_fetch($TABLE[CATEGORIES], '', $item['category']);
+                    $html .= strtoupper($item['class']) . ': ' . ($item['section'] ? $section['title'] . ': ' : '') . ($item['category'] ? $category['title'] . ': ' : '') . ucwords($item['type']);
+                } else {
+                    $html .= $item['title'];
+                }
+
+                $html .= '</option>' . "\n";
+            }
+        }
+    
+        $html .= '</select>';
+    } else {
+        $html .= '<p>None available.</p>';
+    }
+
+    return $html . "\n";
 }
 
 # HTML_TEXTAREA ################################################################
 # string html_textarea(string $var, string $label[, strng $value])
 function html_textarea($var, $label, $value='') {
     return html_label($var, $label)
-        . '<textarea name="' . $var . '" rows="16" cols="72">' . trim($value) . '</textarea>' . "\n";
+        . '<textarea name="' . $var . '" rows="16" cols="72">' . htmlspecialchars($value) . '</textarea>' . "\n";
 }
 
 # HTML_TEXTBOX #################################################################

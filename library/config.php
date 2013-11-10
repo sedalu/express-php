@@ -15,4 +15,7 @@ $DB[PASS] = 'v1r3d3';
 $DB[DATABASE] = 'test';
 # OPTIONAL, a prefix to attach to all tables used my Express
 $DB[PREFIX] = 'express_';
+
+# To enable demo mode, set $DEMO = true.
+$DEMO = false;
 ?>

@@ -81,7 +81,7 @@ function get_selection_list($table, $is_remove = false) {
         . '<form action="?mode=preview" method="' . ($is_remove ? 'post' : 'get') . '">' . "\n"
         . '<p>Choose a ' . $table .' to ' . ($is_remove ? 'remove' : 'modify') . '.</p>' . "\n"
         . '<input type="hidden" name="' . ($is_remove ? 'remove' : 'modify') . '" value="' . $table .'" />' . "\n"
-        . html_get_selection_list($table, 'id', ucfirst($table) ,'')
+        . html_selection_list('id', ucfirst($table), '', '', $table)
         . '<p class="form"><input type="submit" value="' . ($is_remove ? 'Remove' : 'Modify') . '" /></p>' . "\n"
         . '</form>' . "\n";
 }

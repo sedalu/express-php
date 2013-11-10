@@ -15,6 +15,13 @@ $FETCH[INDEX_ENTRIES] = 'index:entries';
 $FETCH[INDEX_SECTIONS] = 'index:sections';
 $FETCH[TEMPLET] = 'templet';
 
+$ORDER[CATEGORY] = 'id ASC';
+$ORDER[COMMENTS] = 'date DESC';
+$ORDER[ENTRIES] = 'date DESC';
+$ORDER[SECTIONS] = 'id ASC';
+$ORDER[SEGMENTS] = 'id ASC';
+$ORDER[TEMPLETS] = 'class ASC, section ASC, category ASC, type ASC';
+
 $SETTING[ADMIN_PASS] = 'admin pass';
 $SETTING[ADMIN_USER] = 'admin user';
 $SETTING[FORMAT_DATE] = 'format date';
@@ -48,9 +55,9 @@ mysql_select_db($DB[DATABASE], $DB[LINK]);
 # DB_CREATE ####################################################################
 # bool db_create(string $table, array $item)
 function db_create($table, $item) {
-    global $DB, $TABLE;
+    global $DB, $DEMO, $TABLE;
 
-    if(validate_item($table, $item)) {
+    if(validate_item($table, $item) && !$DEMO) {
         $query = 'INSERT INTO ' . $DB[PREFIX] . $table . ' (';
 
         foreach($item as $key => $value) {
@@ -64,7 +71,7 @@ function db_create($table, $item) {
             }
         }
 
-        if($table == $TABLE[COMMENTS] && !isset($item['date'])) {
+        if(($table == $TABLE[COMMENTS] || $table == $TABLE[ENTRIES]) && !isset($item['date'])) {
             $query .= ', date';
             $query_values .= ', NOW()';
         }
@@ -74,6 +81,77 @@ function db_create($table, $item) {
         if(mysql_query($query, $DB[LINK])) {
             return true;
         }
+    }
+
+    return false;
+}
+
+# DB_CREATE_TABLE ##############################################################
+# bool db_create_table(string $table[, bool $drop])
+function db_create_table($table, $drop = false) {
+    global $DB, $DEMO, $TABLE, $TEMPLET_CLASS, $TEMPLET_TYPE;
+
+    if(validate_table($table) && !$DEMO) {
+        if($drop) {
+            $query = 'DROP TABLE IF EXISTS `' . $DB[PREFIX] . $table . '`';
+            mysql_query($query, $DB[LINK]);
+        }
+
+        $query = 'CREATE TABLE `' . $DB[PREFIX] . $table . '` (';
+
+        if($table == $TABLE[CATEGORIES]) {
+            $query .= '`id` int(10) unsigned NOT NULL auto_increment,'
+                . '`title` tinytext NOT NULL,'
+                . '`priority` tinyint(3) unsigned NOT NULL default \'0\','
+                . 'PRIMARY KEY (`id`)';
+        } elseif($table == $TABLE[COMMENTS]) {
+            $query .= '`id` int(10) unsigned NOT NULL auto_increment,'
+                . '`entry` int(10) unsigned NOT NULL default \'0\','
+                . '`date` datetime NOT NULL default \'0000-00-00 00:00:00\','
+                . '`name` tinytext NOT NULL,'
+                . '`comment` text NOT NULL,'
+                . 'PRIMARY KEY (`id`)';
+        } elseif($table == $TABLE[ENTRIES]) {
+            $query .= '`id` int(10) unsigned NOT NULL auto_increment,'
+                . '`section` tinyint(3) unsigned NOT NULL default \'0\','
+                . '`category` int(10) unsigned NOT NULL default \'0\','
+                . '`date` datetime NOT NULL default \'0000-00-00 00:00:00\','
+                . '`title` tinytext NOT NULL,'
+                . '`text` text NOT NULL,'
+                . 'PRIMARY KEY (`id`),'
+                . 'KEY `section` (`section`),'
+                . 'KEY `category` (`category`)';
+        } elseif($table == $TABLE[SECTIONS]) {
+            $query .= '`id` tinyint(3) unsigned NOT NULL auto_increment,'
+                . '`title` tinytext NOT NULL,'
+                . '`priority` tinyint(3) unsigned NOT NULL default \'0\','
+                . '`index_display` tinyint(1) unsigned NOT NULL default \'0\','
+                . 'PRIMARY KEY (`id`)';
+        } elseif($table == $TABLE[SEGMENTS]) {
+            $query .= '`id` int(10) unsigned NOT NULL auto_increment,'
+                . '`entry` int(10) unsigned NOT NULL default \'0\','
+                . '`title` tinytext NOT NULL,'
+                . '`text` text NOT NULL,'
+                . 'PRIMARY KEY  (`id`),'
+                . 'KEY `entry` (`entry`)';
+        } elseif($table == $TABLE[SETTINGS]) {
+            $query .= '`id` varchar(255) NOT NULL default \'\','
+                . '`value` varchar(255) NOT NULL default \'\','
+                . 'PRIMARY KEY (`id`)';
+        } elseif($table == $TABLE[TEMPLETS]) {
+            $query .= '`id` int(10) unsigned NOT NULL auto_increment,'
+                . '`type` enum(\'' . $TEMPLET_TYPE[COMMENT] . '\',\'' . $TEMPLET_TYPE[COMMENT_ENTRY] . '\',\'' . $TEMPLET_TYPE[ENTRY] . '\',\'' . $TEMPLET_TYPE[INDEX_ENTRY] . '\',\'' . $TEMPLET_TYPE[PAGE] . '\',\'' . $TEMPLET_TYPE[SECTION] . '\',\'' . $TEMPLET_TYPE[SECTION_ENTRY] . '\',\'' . $TEMPLET_TYPE[SECTION_LINK] . '\',\'' . $TEMPLET_TYPE[SEGMENT] . '\') NOT NULL default \'' . $TEMPLET_TYPE[COMMENT] . '\','
+                . '`section` tinyint(3) unsigned NOT NULL default \'0\','
+                . '`category` int(10) unsigned NOT NULL default \'0\','
+                . '`class` enum(\'' . $TEMPLET_CLASS[HTML] . '\') NOT NULL default \'' . $TEMPLET_CLASS[HTML] . '\','
+                . '`text` text NOT NULL,'
+                . 'PRIMARY KEY (`id`),'
+                . 'UNIQUE KEY `UNIQUE` (`type`,`section`,`category`,`class`)';
+        }
+
+        $query .= ') TYPE=MyISAM' . (($table != $TABLE[SETTINGS]) ? ' PACK_KEYS=0 AUTO_INCREMENT=1' : '');
+
+        return mysql_query($query, $DB[LINK]);
     }
 
     return false;
@@ -167,9 +245,9 @@ function db_fetch_column($column) {
 # DB_MODIFY ####################################################################
 # db_modify(string $table, array $item)
 function db_modify($table, $item) {
-    global $DB;
+    global $DB, $DEMO;
 
-    if(validate_item($table, $item)) {
+    if(validate_item($table, $item) && !$DEMO) {
         $query = 'UPDATE ' . $DB[PREFIX] . $table . ' SET ';
 
         foreach($item as $key => $value) {
@@ -194,16 +272,10 @@ function db_modify($table, $item) {
 # DB_REMOVE ####################################################################
 # bool db_remove(string $table, int $item)
 function db_remove($table, $item) {
-    global $DB;
+    global $DB, $DEMO;
 
-    if(validate_table($table)) {
+    if(validate_table($table) && !$DEMO) {
         $query = 'DELETE FROM ' . $DB[PREFIX] . $table . ' WHERE id = ' . $item;
-/*        if($table == $TABLE[ENTRIES]) {
-            $query = 'DELETE FROM ' . $DB[PREFIX]. $DB[SEGMENT] . ' WHERE entry = ' . $id;
-            mysql_query($query, $DB[LINK]);
-            $query = 'DELETE FROM ' . $DB[PREFIX] . $TABLE[COMMENTS] . ' WHERE entry = ' . $id;
-            mysql_query($query, $DB[LINK]);
-        }*/
 
         if(mysql_query($query, $DB[LINK])) {
             return true;

@@ -79,8 +79,11 @@ body#panel div#content h3 {
     margin-top: 6pt;
 }
 
+div#content input {
+    margin-right: 6pt;
+}
+
 div#content label {
-//    color: rgb(30%, 30%, 30%);
     display: block;
     font-weight: bold;
     margin-top: 6pt;
