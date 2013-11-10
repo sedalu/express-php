@@ -39,7 +39,7 @@ function templet_complete($templet, $values) {
     }
 
     if(substr_count($text, '<!-- comment form -->')) {
-        $text = str_replace('<!-- comment form -->', '<form name="comment" action="comment" method="post">' . "\n"
+        $text = str_replace('<!-- comment form -->', '<form name="comment.php" action="comment" method="post">' . "\n"
             . '<input type="hidden" name="entry" value="' . $values['id'] . '" />' . "\n"
             . '<lable for="name">Name:</lable><br />' . "\n"
             . '<input type="text" name="name" size="32" /><br />' . "\n"

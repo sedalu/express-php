@@ -12,5 +12,7 @@ if(db_create($TABLE[COMMENTS], $_POST)) {
     $page_values['content'] = templet_complete($comment, $entry);
     $page_values['title'] = 'Comment';
     echo templet_complete($page, $page_values);
+} else {
+    header('Location: index.php');
 }
 ?>

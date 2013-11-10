@@ -3,7 +3,7 @@
 # LIBRARY/HTML.PHP                                                             #
 ################################################################################
 
-$EXPRESS['version'] = '1.0.1';
+$EXPRESS['version'] = '1.0.2';
 
 # HTML_ADMIN_FRAME #############################################################
 # string html_admin_frame()
@@ -71,6 +71,30 @@ function html_admin_panel() {
     return $html;
 }
 
+# HTML_ADMIN_SETTINGS ##########################################################
+# string html_admin_settings()
+function html_admin_settings() {
+    global $SETTING, $TABLE;
+
+    $html = '<form action="admin.php?mode=preview" method="post">' . "\n"
+        . '<input type="hidden" name="modify" value="settings" />' . "\n"
+        . '<h3>Login</h3>' . "\n"
+        . html_textbox('setting[' . $SETTING[ADMIN_USER] . ']', 'Username', db_fetch($TABLE[SETTINGS], '', $SETTING[ADMIN_USER]))
+        . html_textbox('setting[' . $SETTING[ADMIN_PASS] . ']', 'Password', db_fetch($TABLE[SETTINGS], '', $SETTING[ADMIN_PASS]), true)
+
+        . '<h3>Format</h3>' . "\n"
+        . html_textbox('setting[' . $SETTING[FORMAT_DATE] . ']', 'Date', db_fetch($TABLE[SETTINGS], '', $SETTING[FORMAT_DATE]))
+        . html_textbox('setting[' . $SETTING[FORMAT_TIME] . ']', 'Time', db_fetch($TABLE[SETTINGS], '', $SETTING[FORMAT_TIME]))
+        . '<h3>Miscellanea</h3>' . "\n"
+        . html_textbox('setting[' . $SETTING[SITE_TITLE] . ']', 'Title', db_fetch($TABLE[SETTINGS], '', $SETTING[SITE_TITLE]))
+        . html_textbox('setting[' . $SETTING[INDEX_TITLE] . ']', 'Index Title', db_fetch($TABLE[SETTINGS], '', $SETTING[INDEX_TITLE]))
+        . html_textbox('setting[' . $SETTING[INDEX_LIMIT] . ']', 'Index Limit', db_fetch($TABLE[SETTINGS], '', $SETTING[INDEX_LIMIT]))
+        . '<p class="form"><input type="reset" value="Reset" /> <input type="submit" value="Save" /></p>' . "\n"
+        . '</form>' . "\n";
+
+    return $html;
+}
+
 # HTML_DISPLAY_PAGE ############################################################
 # string html_display_page(string $title, string $style, string $body[, $frame])
 function html_display_page($title, $body, $style = '', $frame = '') {
@@ -134,7 +158,7 @@ function html_get_selection_list($table, $variable, $label, $value) {
 # HTML_FORM ####################################################################
 # string html_form(string $table, int $id)
 function html_form($table, $id) {
-    global $DB, $COLUMN, $MYSQL, $TABLE, $FETCH;
+    global $DB, $COLUMN, $MYSQL, $TABLE, $TEMPLET_CLASS, $TEMPLET_TYPE, $FETCH;
 $item = db_fetch($table, '', $id);
     $html = '<h2>'. (($id != 'new' && $item) ? 'Modify' : 'Create') . ' ';
 
@@ -188,17 +212,8 @@ $item = db_fetch($table, '', $id);
     } elseif($table == $TABLE[SETTINGS]) {
         $html .= html_textbox('item[value]', ucwords($id), $item);
     } elseif($table == $TABLE[TEMPLETS]) {
-        $html .= '<h3><lable for="item[class]">Class:</lable></h3>' . "\n"
-            . '<select name="item[class]">' . "\n";
- 
-        if($classes = db_fetch_column($COLUMN[CLASSES])) {
-            for($i = 1; $i <= count($classes); $i++) {
-                $html .= '<option value="' . $classes[($i - 1)] . '"' . (($item['class'] == $classes[($i - 1)]) ? ' selected' : '') . '>' . strtoupper($classes[($i - 1)]) . '</option>' . "\n";
-            }
-        }
-
-        $html .= '</select>' . "\n"
-            . '<h3><lable for="item[section]">Section:</lable></h3>' . "\n"
+        $html .= html_selection_list('item[class]', 'Class', $TEMPLET_CLASS, $item['class'])
+            . '<label for="item[section]">Section:</label>' . "\n"
             . '<select name="item[section]">' . "\n"
             . '<option value="0"' . (($item['section'] == 0) ? ' selected' : '') . '>DEFAULT</option>' . "\n";
 
@@ -210,7 +225,7 @@ $item = db_fetch($table, '', $id);
         }
 
         $html .= '</select>' . "\n"
-            . '<h3><lable for="item[category]">Category:</lable></h3>' . "\n"
+            . '<label for="item[category]">Category:</label>' . "\n"
             . '<select name="item[category]">' . "\n"
             . '<option value="0"' . (($item['category'] == 0) ? ' selected' : '') . '>DEFAULT</option>' . "\n";
 
@@ -222,16 +237,7 @@ $item = db_fetch($table, '', $id);
         }
 
         $html .= '</select>' . "\n"
-            . '<h3><lable for="item[type]">Type:</lable></h3>' . "\n"
-            . '<select name="item[type]">' . "\n";
- 
-        if($types = db_fetch_column($COLUMN[TYPES])) {
-            for($i = 1; $i <= count($types); $i++) {
-                $html .= '<option value="' . $types[($i - 1)] . '"' . (($item['type'] == $types[($i - 1)]) ? ' selected' : '') . '>' . ucwords($types[($i - 1)]) . '</option>' . "\n";
-            }
-        }
-
-        $html .= '</select>' . "\n"
+            . html_selection_list('item[type]', 'Type', $TEMPLET_TYPE, $item['type'])
             . html_textarea('item[text]', 'Text', $item['text']);
     }
 
@@ -264,7 +270,7 @@ function html_make_paragraphs($text) {
 # HTML_LABEL ###################################################################
 # string html_label(string $var, string $label)
 function html_label($var, $label) {
-    return '<h3><label for="' . $var . '">' . $label . '</label></h3>' . "\n";
+    return '<label for="' . $var . '">' . $label . '</label>' . "\n";
 }
 
 # HTML_SELECTION_LIST ##########################################################
@@ -274,9 +280,8 @@ function html_selection_list($var, $label, $items, $value = '') {
     $html = html_label($var, $label)
         . '<select name="' . $var . '">' . "\n";
 
-    for($i = 0; $i < count($item); $i++) {
-        $item = $items[$i];
-        $html .= '<option value="' . $item['id'] . '"' . (($value == $item['id']) ? ' selected' : '') . '>' . $item['title'] . '</option>' . "\n";
+    foreach($items as $item) {
+        $html .= '<option value="' . (is_array($item['id']) ? $item['id'] : $item) . '"' . (($value == (is_array($item['id']) ? $item['id'] : $item)) ? ' selected' : '') . '>' . (is_array($item['title']) ? $item['title'] : $item) . '</option>' . "\n";
     }
 
     return $html . '</select>' . "\n";

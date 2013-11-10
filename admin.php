@@ -6,13 +6,26 @@ require_once('library/librarian.php');
 session_start();
 
 if(session_validate()) {
-    $content = '<div id="content"><h1>Express</h1>' . "\n";
+    $content = '<div id="content"><h1>Express';
+
+    if($_GET['modify'] == 'settings') {
+        $content .= ': Settings';
+    }
+
+    $content .= '</h1>' . "\n";
 
     if(isset($_POST['create'])) {
         db_create($TABLE[strtoupper($_POST['create'])], $_POST['item']);
         unset($_POST['item']);
     } elseif(isset($_POST['modify'])) {
-        db_modify($TABLE[strtoupper($_POST['modify'])], $_POST['item']);
+        if($_POST['modify'] == 'settings') {
+            foreach($_POST['setting'] as $item['id'] => $item['value']) {
+                db_modify($TABLE[strtoupper($_POST['modify'])], $item);
+            }
+        } else {
+            db_modify($TABLE[strtoupper($_POST['modify'])], $_POST['item']);
+        }
+
         unset($_POST['item']);
     } elseif(isset($_POST['remove'])) {
         db_remove($TABLE[strtoupper($_POST['remove'])], $_POST['id']);
@@ -22,7 +35,9 @@ if(session_validate()) {
     if(isset($_GET['create'])) {
         $content .= html_form($TABLE{strtoupper($_GET['create'])}, 'new');
     } elseif(isset($_GET['modify'])) {
-        if(isset($_GET['id'])) {
+        if($_GET['modify'] == 'settings') {
+            $content .= html_admin_settings();
+        } elseif(isset($_GET['id'])) {
             $content .= html_form($TABLE{strtoupper($_GET['modify'])}, $_GET['id']);
         } else {
             $content .= get_selection_list($TABLE[strtoupper($_GET['modify'])]);
@@ -37,12 +52,14 @@ if(session_validate()) {
         unset($_SESSION['logged_in']);
         session_destroy();
         header('Location: index.php');
+    } elseif($_GET['mode'] == 'settings') {
+        $content .= html_admin_settings();
     } else {
         $frame = html_admin_frame();
     }
 
     $content .= html_footer();
-    html_display_page('Express: ' . db_fetch($TABLE[SETTINGS], '', $SETTING[SITE_TITLE]), $content, ($_GET['mode'] ? 'panel' : ''), $frame);
+    html_display_page('Express: ' . db_fetch($TABLE[SETTINGS], '', $SETTING[SITE_TITLE]), $content, (($_GET['mode'] == 'panel') ? 'panel' : ''), $frame);
 } elseif(session_login($_POST['login'])) {
     unset($_POST['login']);
     header('Location: admin.php');
@@ -64,7 +81,7 @@ function get_selection_list($table, $is_remove = false) {
         . '<form action="?mode=preview" method="' . ($is_remove ? 'post' : 'get') . '">' . "\n"
         . '<p>Choose a ' . $table .' to ' . ($is_remove ? 'remove' : 'modify') . '.</p>' . "\n"
         . '<input type="hidden" name="' . ($is_remove ? 'remove' : 'modify') . '" value="' . $table .'" />' . "\n"
-        . html_get_selection_list($table, 'id', ucfirst($table_str) ,'')
+        . html_get_selection_list($table, 'id', ucfirst($table) ,'')
         . '<p class="form"><input type="submit" value="' . ($is_remove ? 'Remove' : 'Modify') . '" /></p>' . "\n"
         . '</form>' . "\n";
 }
