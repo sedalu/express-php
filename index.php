@@ -8,13 +8,13 @@ if(!librarian_express_installed()) {
     header('Location: admin.php');
 }
 
-if($_GET['feed'] == 'rss' || $_GET['feed'] == 'xml' || $_GET['feed'] == 'rss.xml') {
+if($_GET['feed'] == 'rss') {
+    header('Content-type: application/rss+xml');
     $class = $TEMPLET_CLASS[RSS_XML];
 } else {
     $class = $TEMPLET_CLASS[HTML];
 }
 
-$page = db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[PAGE], '', '', $class);
 $page_value['content'] = '';
 $page_value['title'] = db_fetch($TABLE[SETTINGS], '', $SETTING[INDEX_TITLE]);
 
@@ -26,5 +26,5 @@ if($entries = db_fetch($FETCH[INDEX_ENTRIES], 'date DESC, title ASC')) {
     }
 }
 
-echo templet_replace_tokens($page, $page_value);
+echo templet_replace_tokens(db_fetch($FETCH[TEMPLET], '', $TEMPLET_TYPE[PAGE], '', '', $class), $page_value);
 ?>

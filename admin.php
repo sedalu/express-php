@@ -57,12 +57,13 @@ if(!librarian_express_installed()) {
         db_create($TABLE[SETTINGS], array('id' => $SETTING[ADMIN_PASS], 'value' => $_POST['install']['express']['pass']));
         db_create($TABLE[SETTINGS], array('id' => $SETTING[ADMIN_USER], 'value' => $_POST['install']['express']['user']));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[PAGE], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<?xml version="1.0" encoding="utf-8"?>\r\n<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3c.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">\r\n<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">\r\n<head>\r\n<title><!-- site title -->: <!-- title --></title>\r\n<link rel="stylesheet" type="text/css" href="css/style_sample.css" />\r\n</head>\r\n<body>\r\n<div id="header"><!-- site title --></div>\r\n<div id="navigation"><a href="index.php" title="Home">Home</a> |<!-- section links -->| <a href="mailto:user@doman.tld" title="Email">Email</a></div>\r\n<div id="content"><h1><!-- title --></h1>\r\n<!-- content --></div>\r\n<div id="footer"><p><a href="http://express.sedalu.com/" title="Express">Powered by Express</a></p></div>\r\n</body>\r\n</html>'));
-//        db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[PAGE], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[RSS_XML], 'text' => 'RSS/XML Feed'));
+        db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[PAGE], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[RSS_XML], 'text' => '<?xml version="1.0" encoding="UTF-8"?>\r\n<rss version="2.0">\r\n<channel>\r\n<title><!-- site title -->: <!-- title --></title>\r\n<link><!-- site url --></link>\r\n<description><!-- site title -->: <!-- title --></description>\r\n<copyright>Copyright (c) 2004 Your Name</copyright>\r\n<generator>Express (version <!-- express version -->)</generator>\r\n<language>en-us</language>\r\n<!-- content -->\r\n</channel>\r\n</rss>'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[COMMENT], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<h3><!-- name --></h3>\n<div><!-- date --> | <!-- time --></div>\n<p><!-- comment --></p>'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[SECTION], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<h2><a name="<!-- category anchor -->"></a><!-- title --></h2>\n<!-- content -->'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[COMMENT_ENTRY], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<h2><!-- title --></h2>\n<p><!-- text --></p>\n<h2>Leave Comment</h2>\n<!-- comment form -->'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[ENTRY], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<div><!-- date --> | <a href="<!-- comment url -->">Comment</a></div>\n<p><!-- text --></p>\n<!-- segments -->\n<h2><a name="comments"></a>Comments</h2>\n<div><a href="<!-- comment url -->">Comment</a></div>\n<!-- comments -->'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[INDEX_ENTRY], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<h2><a href="<!-- entry url -->" name="<!-- title -->"><!-- title --></a></h2>\n<div><!-- date --> | <a href="<!-- section url -->#<!-- category anchor -->"><!-- section -->: <!-- category --></a> | <!-- comment link --></div>\n<p><!-- text --></p>'));
+        db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[INDEX_ENTRY], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[RSS_XML], 'text' => '<item>\r\n<title><!-- title --></title>\r\n<guid><!-- site url --><!-- entry url --></guid>\r\n<link><!-- site url --><!-- entry url --></link>\r\n<pubDate><!-- rss date --> <!-- rss time --></pubDate>\r\n<category><!-- section -->: <!-- category --></category>\r\n<description><!-- text --></description>\r\n<comments><!-- site url --><!-- entry url -->#comments</comments>\r\n</item>'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[SECTION_ENTRY], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<h3><a href="<!-- entry url -->"><!-- title --></a></h3>\n<div><!-- date --> | <!-- comment link --></div>\n<p><!-- text --></p>'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[SECTION_LINK], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => ' <a href="<!-- section url -->" title="<!-- title -->"><!-- title --></a> |'));
         db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[SEGMENT], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[HTML], 'text' => '<h2><a name="<!-- segment anchor -->"></a><!-- title --></h2>\n<p><!-- text --></p>'));
@@ -96,6 +97,13 @@ if(!librarian_express_installed()) {
             $setting['value'] = '1.1.0';
             db_create($TABLE[SETTINGS], $setting);
         }
+    }
+    if($version == '1.1.0') {
+        db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[PAGE], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[RSS_XML], 'text' => '<?xml version="1.0" encoding="UTF-8"?>\r\n<rss version="2.0">\r\n<channel>\r\n<title><!-- site title -->: <!-- title --></title>\r\n<link><!-- site url --></link>\r\n<description><!-- site title -->: <!-- title --></description>\r\n<copyright>Copyright (c) 2004 Your Name</copyright>\r\n<generator>Express (version <!-- express version -->)</generator>\r\n<language>en-us</language>\r\n<!-- content -->\r\n</channel>\r\n</rss>'));
+        db_create($TABLE[TEMPLETS], array('type' => $TEMPLET_TYPE[INDEX_ENTRY], 'section' => '0', 'category' => '0', 'class' => $TEMPLET_CLASS[RSS_XML], 'text' => '<item>\r\n<title><!-- title --></title>\r\n<guid><!-- site url --><!-- entry url --></guid>\r\n<link><!-- site url --><!-- entry url --></link>\r\n<pubDate><!-- rss date --> <!-- rss time --></pubDate>\r\n<category><!-- section -->: <!-- category --></category>\r\n<description><!-- text --></description>\r\n<comments><!-- site url --><!-- entry url -->#comments</comments>\r\n</item>'));
+        $setting['id'] = 'express version';
+        $setting['value'] = '1.1.1';
+        db_modify($TABLE[SETTINGS], $setting);
     }
 
     $content = '<div id="content"><h1>';
@@ -276,7 +284,7 @@ function admin__html_footer() {
     global $EXPRESS;
 
     return '<div id="footer"><p><a href="http://express.sedalu.com/" title="Express">Express</a> (version ' . $EXPRESS[VERSION] . ')</p>' . "\n"
-        . '<p>Copyright &copy; 2003 Seth D Lumnah.</p>' . "\n"
+        . '<p>Copyright &copy; 2003-2004 Seth D Lumnah.</p>' . "\n"
         . '<p>All rights reserved.</p></div>';
 }
 

@@ -18,13 +18,15 @@ $EXPRESS[SETTINGS][SINGLE] = 'setting';
 $EXPRESS[TEMPLETS][TABLE] = 'templets';
 $EXPRESS[TEMPLETS][SINGLE] = 'templet';
 
-$EXPRESS[VERSION] = '1.1.0';
-
 require_once('config.php');
 require_once('database.php');
 require_once('html.php');
 require_once('session.php');
 require_once('templet.php');
+
+if(librarian_express_installed()) {
+    $EXPRESS[VERSION] = db_fetch($TABLE[SETTINGS], '', 'express version');
+}
 
 # LIBRARIAN_EXPRESS_INSTALLED ##################################################
 # bool librarian_express_installed()
